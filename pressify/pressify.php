@@ -17,7 +17,9 @@ define('PRESSIFY_PLUGIN_VERSION', '0.1.0');
 define('PRESSIFY_PLUGIN_FILE', __FILE__);
 define('PRESSIFY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PRESSIFY_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('PRESSIFY_SHOPIFY_API_VERSION', '2025-10');
+if (!defined('PRESSIFY_SHOPIFY_API_VERSION')) {
+	define('PRESSIFY_SHOPIFY_API_VERSION', '2025-10');
+}
 
 require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-plugin.php';
 

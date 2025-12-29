@@ -37,7 +37,6 @@ Pressify is a **standalone WordPress plugin** (no WooCommerce dependency) that:
    - **Shop domain**: `your-store.myshopify.com`
    - **Admin access token**: used for product/variant sync
    - **Storefront access token**: used for cart operations
-   - **API version**: defaults to `2025-10` (change only if you need to match your store/app config)
 3. (Optional) Enable **Scheduled sync** to run an hourly sync via WP-Cron.
 4. Click **Save settings**.
 5. Click **Run sync now** to import products/variants.
@@ -125,6 +124,28 @@ Manual sync is always available from **Settings → Pressify**.
 - **No order syncing**: checkout is handled by Shopify; Pressify does not create WP “orders”.
 - **Cart line pagination**: cart fetch reads up to 50 cart lines per request.
 - **Inventory/price freshness**: cart/checkout pricing is authoritative in Shopify; synced WP product content may lag until the next sync.
+
+## Advanced: Shopify API version overrides
+
+Pressify uses a default Shopify API version constant:
+
+- `PRESSIFY_SHOPIFY_API_VERSION` (defined in `pressify/pressify.php`)
+
+You normally **do not** need to set this during setup. If Shopify deprecates the version you’re using, you can override it:
+
+- **Option A (recommended)**: define it in `wp-config.php` (so upgrades don’t overwrite your choice):
+
+```php
+define('PRESSIFY_SHOPIFY_API_VERSION', '2025-10');
+```
+
+- **Option B**: filter it from a small mu-plugin/theme snippet:
+
+```php
+add_filter('pressify_shopify_api_version', function ($version) {
+    return '2025-10';
+});
+```
 
 ## Project layout
 
