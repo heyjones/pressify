@@ -21,9 +21,10 @@ final class Options {
 		$opts['shop_domain'] = isset($raw['shop_domain']) ? sanitize_text_field((string) $raw['shop_domain']) : '';
 		$opts['admin_access_token'] = isset($raw['admin_access_token']) ? sanitize_text_field((string) $raw['admin_access_token']) : '';
 		$opts['storefront_access_token'] = isset($raw['storefront_access_token']) ? sanitize_text_field((string) $raw['storefront_access_token']) : '';
-		$opts['api_version'] = isset($raw['api_version']) && $raw['api_version'] !== ''
+		$defaultApiVersion = defined('PRESSIFY_SHOPIFY_API_VERSION') ? (string) PRESSIFY_SHOPIFY_API_VERSION : '2025-10';
+		$opts['api_version'] = isset($raw['api_version']) && trim((string) $raw['api_version']) !== ''
 			? sanitize_text_field((string) $raw['api_version'])
-			: '2025-10';
+			: $defaultApiVersion;
 		$opts['enable_cron'] = !empty($raw['enable_cron']) ? 1 : 0;
 
 		// Optional for webhook verification (not required for the initial sync/cart).

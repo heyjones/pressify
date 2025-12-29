@@ -96,7 +96,8 @@ final class OptionsPage {
 		self::add_field('shop_domain', 'Shop domain', 'e.g. <code>my-store.myshopify.com</code>');
 		self::add_field('admin_access_token', 'Admin access token', 'Private; required to sync products/variants.', true);
 		self::add_field('storefront_access_token', 'Storefront access token', 'Used for cart operations; can be exposed but we keep it server-side.', true);
-		self::add_field('api_version', 'API version', 'e.g. <code>2025-10</code>.');
+		$default = defined('PRESSIFY_SHOPIFY_API_VERSION') ? (string) PRESSIFY_SHOPIFY_API_VERSION : '2025-10';
+		self::add_field('api_version', 'API version', 'Leave blank to use the default (<code>' . esc_html($default) . '</code>).');
 
 		add_settings_section(
 			'pressify_section_sync',
