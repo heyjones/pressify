@@ -1,36 +1,56 @@
+.pressify-products,
+.pressify-cart {
+  /* Theme-aware defaults (block themes / theme.json) */
+  --pressify-surface: var(--wp--preset--color--base, #fff);
+  --pressify-text: var(--wp--preset--color--contrast, #111);
+  --pressify-accent: var(--wp--preset--color--contrast, #111);
+  --pressify-accent-text: var(--wp--preset--color--base, #fff);
+
+  --pressify-gap: var(--wp--preset--spacing--40, 16px);
+  --pressify-pad: var(--wp--preset--spacing--30, 12px);
+  --pressify-radius: var(--wp--custom--border--radius, 10px);
+  --pressify-radius-sm: var(--wp--custom--border--radius-small, 8px);
+
+  /* Borders are intentionally conservative (not all themes expose a border color var) */
+  --pressify-border: rgba(0, 0, 0, 0.12);
+  --pressify-border-strong: rgba(0, 0, 0, 0.2);
+  --pressify-border-subtle: rgba(0, 0, 0, 0.1);
+}
+
 .pressify-products {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  gap: var(--pressify-gap);
 }
 
 .pressify-product-card {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  padding: 12px;
-  background: #fff;
+  border: 1px solid var(--pressify-border);
+  border-radius: var(--pressify-radius);
+  padding: var(--pressify-pad);
+  background: var(--pressify-surface);
+  color: var(--pressify-text);
 }
 
 .pressify-product-image {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: var(--pressify-radius-sm);
+  margin-bottom: var(--wp--preset--spacing--30, 12px);
 }
 
 .pressify-variant-select {
   width: 100%;
-  margin: 8px 0 10px;
+  margin: var(--wp--preset--spacing--20, 8px) 0 var(--wp--preset--spacing--30, 12px);
 }
 
 .pressify-add-to-cart {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #111;
-  color: #fff;
+  padding: var(--wp--preset--spacing--20, 8px) var(--pressify-pad);
+  border-radius: var(--pressify-radius-sm);
+  border: 1px solid var(--pressify-border-strong);
+  background: var(--pressify-accent);
+  color: var(--pressify-accent-text);
   cursor: pointer;
 }
 
@@ -42,16 +62,16 @@
 .pressify-cart-line {
   display: grid;
   grid-template-columns: 64px 1fr;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  gap: var(--pressify-pad);
+  padding: var(--pressify-pad) 0;
+  border-bottom: 1px solid var(--pressify-border-subtle);
 }
 
 .pressify-cart-line-img {
   width: 64px;
   height: 64px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--pressify-radius);
 }
 
 .pressify-cart-line-title {
@@ -60,9 +80,9 @@
 
 .pressify-cart-line-controls {
   display: flex;
-  gap: 10px;
+  gap: var(--wp--preset--spacing--30, 12px);
   align-items: center;
-  margin-top: 8px;
+  margin-top: var(--wp--preset--spacing--20, 8px);
 }
 
 .pressify-cart-qty {
@@ -71,11 +91,11 @@
 
 .pressify-checkout-button {
   display: inline-block;
-  margin-top: 14px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: #111;
-  color: #fff;
+  margin-top: var(--wp--preset--spacing--40, 16px);
+  padding: var(--wp--preset--spacing--20, 8px) var(--wp--preset--spacing--40, 16px);
+  border-radius: var(--pressify-radius);
+  background: var(--pressify-accent);
+  color: var(--pressify-accent-text);
   text-decoration: none;
 }
 
