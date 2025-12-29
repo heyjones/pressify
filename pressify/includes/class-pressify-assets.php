@@ -1,6 +1,6 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 if (!defined('ABSPATH')) {
 	exit;
@@ -12,34 +12,33 @@ final class Assets {
 			return;
 		}
 
-		// Only load when shortcodes are present on the page.
-		if (!self::page_uses_shortcodes(['sss_products', 'sss_cart'])) {
+		if (!self::page_uses_shortcodes(['pressify_products', 'pressify_cart'])) {
 			return;
 		}
 
 		wp_register_script(
-			'sss-frontend',
-			SSS_PLUGIN_URL . 'assets/sss.js',
+			'pressify-frontend',
+			PRESSIFY_PLUGIN_URL . 'assets/pressify.js',
 			[],
-			SSS_PLUGIN_VERSION,
+			PRESSIFY_PLUGIN_VERSION,
 			true
 		);
 
 		wp_register_style(
-			'sss-frontend',
-			SSS_PLUGIN_URL . 'assets/sss.css',
+			'pressify-frontend',
+			PRESSIFY_PLUGIN_URL . 'assets/pressify.css',
 			[],
-			SSS_PLUGIN_VERSION
+			PRESSIFY_PLUGIN_VERSION
 		);
 
-		wp_enqueue_script('sss-frontend');
-		wp_enqueue_style('sss-frontend');
+		wp_enqueue_script('pressify-frontend');
+		wp_enqueue_style('pressify-frontend');
 
 		$cfg = [
-			'restBase' => esc_url_raw(rest_url('sss/v1')),
+			'restBase' => esc_url_raw(rest_url('pressify/v1')),
 		];
 
-		wp_add_inline_script('sss-frontend', 'window.SSS = ' . wp_json_encode($cfg) . ';', 'before');
+		wp_add_inline_script('pressify-frontend', 'window.Pressify = ' . wp_json_encode($cfg) . ';', 'before');
 	}
 
 	private static function page_uses_shortcodes(array $shortcodes): bool {

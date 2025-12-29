@@ -1,6 +1,6 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 if (!defined('ABSPATH')) {
 	exit;
@@ -65,8 +65,7 @@ final class ShopifyClient {
 		}
 
 		if (!empty($data['errors'])) {
-			$msg = wp_json_encode($data['errors']);
-			throw new \RuntimeException('Shopify GraphQL errors: ' . $msg);
+			throw new \RuntimeException('Shopify GraphQL errors: ' . wp_json_encode($data['errors']));
 		}
 
 		return $data;

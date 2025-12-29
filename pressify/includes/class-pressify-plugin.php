@@ -1,6 +1,6 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 if (!defined('ABSPATH')) {
 	exit;
@@ -19,16 +19,17 @@ final class Plugin {
 	public function init(): void {
 		$this->includes();
 		$this->hooks();
+		Sync::maybe_schedule();
 	}
 
 	private function includes(): void {
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-options.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-shopify-client.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-products.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-sync.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-rest.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-shortcodes.php';
-		require_once SSS_PLUGIN_DIR . 'includes/class-sss-assets.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-options.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-shopify-client.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-products.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-sync.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-rest.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-shortcodes.php';
+		require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-assets.php';
 	}
 
 	private function hooks(): void {
@@ -49,17 +50,17 @@ final class Plugin {
 		add_action('wp_enqueue_scripts', [Assets::class, 'register']);
 
 		// Cron.
-		add_action('sss_sync_cron', [Sync::class, 'run_scheduled_sync']);
-		register_activation_hook(SSS_PLUGIN_FILE, [Sync::class, 'activate']);
-		register_deactivation_hook(SSS_PLUGIN_FILE, [Sync::class, 'deactivate']);
+		add_action(Sync::CRON_HOOK, [Sync::class, 'run_scheduled_sync']);
+		register_activation_hook(PRESSIFY_PLUGIN_FILE, [Sync::class, 'activate']);
+		register_deactivation_hook(PRESSIFY_PLUGIN_FILE, [Sync::class, 'deactivate']);
 	}
 }
 
-// Minimal admin page lives in a nested namespace for clarity.
-namespace SSS\Admin;
+// Admin page (kept in this file for now, small plugin).
+namespace Pressify\Admin;
 
-use SSS\Options;
-use SSS\Sync;
+use Pressify\Options;
+use Pressify\Sync;
 
 if (!defined('ABSPATH')) {
 	exit;
@@ -68,10 +69,10 @@ if (!defined('ABSPATH')) {
 final class OptionsPage {
 	public static function register_menu(): void {
 		add_options_page(
-			'Shopify Store Sync',
-			'Shopify Sync',
+			'Pressify',
+			'Pressify',
 			'manage_options',
-			'sss-shopify-sync',
+			'pressify',
 			[self::class, 'render']
 		);
 	}
@@ -84,12 +85,12 @@ final class OptionsPage {
 		]);
 
 		add_settings_section(
-			'sss_section_shopify',
+			'pressify_section_shopify',
 			'Shopify connection',
 			static function () {
 				echo '<p>Configure your Shopify store connection. The Admin token is used for product/variant sync. The Storefront token is used for cart + checkout.</p>';
 			},
-			'sss-shopify-sync'
+			'pressify'
 		);
 
 		self::add_field('shop_domain', 'Shop domain', 'e.g. <code>my-store.myshopify.com</code>');
@@ -98,30 +99,30 @@ final class OptionsPage {
 		self::add_field('api_version', 'API version', 'e.g. <code>2025-10</code>.');
 
 		add_settings_section(
-			'sss_section_sync',
+			'pressify_section_sync',
 			'Sync',
 			static function () {
 				echo '<p>Run a manual sync now, or enable scheduled sync.</p>';
 			},
-			'sss-shopify-sync'
+			'pressify'
 		);
 
 		add_settings_field(
-			'sss_enable_cron',
+			'pressify_enable_cron',
 			'Scheduled sync',
 			static function () {
 				$opts = Options::get();
 				$checked = !empty($opts['enable_cron']) ? 'checked' : '';
 				echo '<label><input type="checkbox" name="' . esc_attr(Options::GROUP) . '[enable_cron]" value="1" ' . $checked . '> Enable hourly sync</label>';
 			},
-			'sss-shopify-sync',
-			'sss_section_sync'
+			'pressify',
+			'pressify_section_sync'
 		);
 	}
 
 	private static function add_field(string $key, string $label, string $help, bool $is_secret = false): void {
 		add_settings_field(
-			'sss_' . $key,
+			'pressify_' . $key,
 			esc_html($label),
 			static function () use ($key, $help, $is_secret) {
 				$opts = Options::get();
@@ -130,8 +131,8 @@ final class OptionsPage {
 				echo '<input type="' . esc_attr($type) . '" class="regular-text" name="' . esc_attr(Options::GROUP) . '[' . esc_attr($key) . ']" value="' . esc_attr($val) . '">';
 				echo '<p class="description">' . wp_kses_post($help) . '</p>';
 			},
-			'sss-shopify-sync',
-			'sss_section_shopify'
+			'pressify',
+			'pressify_section_shopify'
 		);
 	}
 
@@ -140,27 +141,23 @@ final class OptionsPage {
 			return;
 		}
 
-		$did_sync = false;
-		$sync_error = null;
-		if (isset($_POST['sss_manual_sync']) && check_admin_referer('sss_manual_sync_action')) {
+		if (isset($_POST['pressify_manual_sync']) && check_admin_referer('pressify_manual_sync_action')) {
 			try {
 				$result = Sync::run_manual_sync();
-				$did_sync = true;
-				add_settings_error('sss_messages', 'sss_synced', 'Sync complete: ' . esc_html($result), 'updated');
+				add_settings_error('pressify_messages', 'pressify_synced', 'Sync complete: ' . esc_html($result), 'updated');
 			} catch (\Throwable $e) {
-				$sync_error = $e->getMessage();
-				add_settings_error('sss_messages', 'sss_sync_failed', 'Sync failed: ' . esc_html($sync_error), 'error');
+				add_settings_error('pressify_messages', 'pressify_sync_failed', 'Sync failed: ' . esc_html($e->getMessage()), 'error');
 			}
 		}
 
 		?>
 		<div class="wrap">
-			<h1>Shopify Store Sync</h1>
-			<?php settings_errors('sss_messages'); ?>
+			<h1>Pressify</h1>
+			<?php settings_errors('pressify_messages'); ?>
 			<form action="options.php" method="post">
 				<?php
 				settings_fields(Options::GROUP);
-				do_settings_sections('sss-shopify-sync');
+				do_settings_sections('pressify');
 				submit_button('Save settings');
 				?>
 			</form>
@@ -168,12 +165,9 @@ final class OptionsPage {
 			<hr>
 			<h2>Manual sync</h2>
 			<form method="post">
-				<?php wp_nonce_field('sss_manual_sync_action'); ?>
-				<?php submit_button('Run sync now', 'secondary', 'sss_manual_sync', false); ?>
+				<?php wp_nonce_field('pressify_manual_sync_action'); ?>
+				<?php submit_button('Run sync now', 'secondary', 'pressify_manual_sync', false); ?>
 			</form>
-			<?php if ($did_sync && $sync_error === null) : ?>
-				<p>Done.</p>
-			<?php endif; ?>
 		</div>
 		<?php
 	}

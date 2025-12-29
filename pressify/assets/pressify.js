@@ -1,14 +1,12 @@
 (() => {
-  const cfg = window.SSS || {};
+  const cfg = window.Pressify || {};
   const base = (cfg.restBase || "").replace(/\/$/, "");
 
   async function api(path, opts = {}) {
     const url = `${base}${path}`;
     const res = await fetch(url, {
       method: opts.method || "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: opts.body ? JSON.stringify(opts.body) : undefined,
     });
@@ -31,29 +29,24 @@
     return `${amount} ${currency || ""}`.trim();
   }
 
-  async function addToCart(variantId, quantity) {
-    return api(`/cart/lines/add`, { method: "POST", body: { variantId, quantity } });
-  }
+  const addToCart = (variantId, quantity) =>
+    api(`/cart/lines/add`, { method: "POST", body: { variantId, quantity } });
 
-  async function getCart() {
-    return api(`/cart`, { method: "GET" });
-  }
+  const getCart = () => api(`/cart`, { method: "GET" });
 
-  async function updateLine(lineId, quantity) {
-    return api(`/cart/lines/update`, { method: "POST", body: { lineId, quantity } });
-  }
+  const updateLine = (lineId, quantity) =>
+    api(`/cart/lines/update`, { method: "POST", body: { lineId, quantity } });
 
-  async function removeLines(lineIds) {
-    return api(`/cart/lines/remove`, { method: "POST", body: { lineIds } });
-  }
+  const removeLines = (lineIds) =>
+    api(`/cart/lines/remove`, { method: "POST", body: { lineIds } });
 
   function bindProducts() {
-    document.querySelectorAll("[data-sss-products]").forEach((root) => {
+    document.querySelectorAll("[data-pressify-products]").forEach((root) => {
       root.addEventListener("click", async (e) => {
-        const btn = e.target.closest("[data-sss-add-to-cart]");
+        const btn = e.target.closest("[data-pressify-add-to-cart]");
         if (!btn) return;
-        const card = btn.closest(".sss-product-card");
-        const sel = card ? card.querySelector("[data-sss-variant-select]") : null;
+        const card = btn.closest(".pressify-product-card");
+        const sel = card ? card.querySelector("[data-pressify-variant-select]") : null;
         const variantId = sel ? sel.value : "";
         if (!variantId) return;
 
@@ -65,7 +58,6 @@
           btn.textContent = "Added";
           setTimeout(() => (btn.textContent = prev), 900);
         } catch (err) {
-          btn.textContent = "Error";
           console.error(err);
           alert(err.message || "Failed to add to cart");
           btn.textContent = prev;
@@ -77,10 +69,10 @@
   }
 
   function renderCart(cart, root) {
-    const status = root.querySelector("[data-sss-cart-status]");
-    const linesEl = root.querySelector("[data-sss-cart-lines]");
-    const summaryEl = root.querySelector("[data-sss-cart-summary]");
-    const checkoutEl = root.querySelector("[data-sss-checkout]");
+    const status = root.querySelector("[data-pressify-cart-status]");
+    const linesEl = root.querySelector("[data-pressify-cart-lines]");
+    const summaryEl = root.querySelector("[data-pressify-cart-summary]");
+    const checkoutEl = root.querySelector("[data-pressify-checkout]");
 
     if (!cart || !cart.id) {
       if (status) status.textContent = "Your cart is empty.";
@@ -96,19 +88,21 @@
     linesEl.innerHTML = lines
       .map((line) => {
         const m = line.merchandise || {};
-        const p = (m.product || {});
-        const img = (m.image && m.image.url) ? `<img class="sss-cart-line-img" src="${m.image.url}" alt="">` : "";
-        const price = (m.price && m.price.amount) ? money(m.price.amount, m.price.currencyCode) : "";
+        const p = m.product || {};
+        const img = m.image && m.image.url
+          ? `<img class="pressify-cart-line-img" src="${m.image.url}" alt="">`
+          : "";
+        const price = m.price && m.price.amount ? money(m.price.amount, m.price.currencyCode) : "";
         return `
-          <div class="sss-cart-line" data-line-id="${line.id}">
+          <div class="pressify-cart-line" data-line-id="${line.id}">
             ${img}
-            <div class="sss-cart-line-main">
-              <div class="sss-cart-line-title">${(p.title || "Item")}</div>
-              <div class="sss-cart-line-variant">${(m.title || "")}</div>
-              <div class="sss-cart-line-price">${price}</div>
-              <div class="sss-cart-line-controls">
-                <input class="sss-cart-qty" type="number" min="0" step="1" value="${line.quantity}">
-                <button class="sss-cart-remove" type="button">Remove</button>
+            <div class="pressify-cart-line-main">
+              <div class="pressify-cart-line-title">${p.title || "Item"}</div>
+              <div class="pressify-cart-line-variant">${m.title || ""}</div>
+              <div class="pressify-cart-line-price">${price}</div>
+              <div class="pressify-cart-line-controls">
+                <input class="pressify-cart-qty" type="number" min="0" step="1" value="${line.quantity}">
+                <button class="pressify-cart-remove" type="button">Remove</button>
               </div>
             </div>
           </div>
@@ -116,15 +110,18 @@
       })
       .join("");
 
-    const total = cart.cost && cart.cost.totalAmount ? money(cart.cost.totalAmount.amount, cart.cost.totalAmount.currencyCode) : "";
-    summaryEl.innerHTML = total ? `<div class="sss-cart-total">Total: <strong>${total}</strong></div>` : "";
+    const total =
+      cart.cost && cart.cost.totalAmount
+        ? money(cart.cost.totalAmount.amount, cart.cost.totalAmount.currencyCode)
+        : "";
+    summaryEl.innerHTML = total ? `<div class="pressify-cart-total">Total: <strong>${total}</strong></div>` : "";
 
     if (checkoutEl) checkoutEl.setAttribute("href", cart.checkoutUrl || "#");
   }
 
   function bindCart() {
-    document.querySelectorAll("[data-sss-cart]").forEach(async (root) => {
-      const status = root.querySelector("[data-sss-cart-status]");
+    document.querySelectorAll("[data-pressify-cart]").forEach(async (root) => {
+      const status = root.querySelector("[data-pressify-cart-status]");
       if (status) status.textContent = "Loading cart…";
 
       async function refresh() {
@@ -140,9 +137,9 @@
       }
 
       root.addEventListener("change", async (e) => {
-        const qtyInput = e.target.closest(".sss-cart-qty");
+        const qtyInput = e.target.closest(".pressify-cart-qty");
         if (!qtyInput) return;
-        const line = qtyInput.closest(".sss-cart-line");
+        const line = qtyInput.closest(".pressify-cart-line");
         if (!line) return;
         const lineId = line.getAttribute("data-line-id");
         const qty = Number(qtyInput.value || 0);
@@ -156,9 +153,9 @@
       });
 
       root.addEventListener("click", async (e) => {
-        const rm = e.target.closest(".sss-cart-remove");
+        const rm = e.target.closest(".pressify-cart-remove");
         if (!rm) return;
-        const line = rm.closest(".sss-cart-line");
+        const line = rm.closest(".pressify-cart-line");
         if (!line) return;
         const lineId = line.getAttribute("data-line-id");
         try {

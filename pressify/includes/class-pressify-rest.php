@@ -1,6 +1,6 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 use WP_REST_Request;
 use WP_REST_Response;
@@ -10,8 +10,9 @@ if (!defined('ABSPATH')) {
 }
 
 final class Rest {
-	private const NS = 'sss/v1';
-	private const CART_COOKIE = 'sss_cart_id';
+	private const NS = 'pressify/v1';
+
+	private const CART_COOKIE = 'pressify_cart_id';
 
 	public static function register_routes(): void {
 		register_rest_route(self::NS, '/products', [
@@ -90,12 +91,13 @@ final class Rest {
 
 	public static function products_show(WP_REST_Request $req): WP_REST_Response {
 		$handle = (string) $req->get_param('handle');
+
 		$q = new \WP_Query([
 			'post_type' => Products::CPT,
 			'post_status' => 'publish',
 			'posts_per_page' => 1,
 			'meta_query' => [[
-				'key' => 'sss_handle',
+				'key' => 'pressify_handle',
 				'value' => $handle,
 				'compare' => '=',
 			]],
@@ -110,23 +112,14 @@ final class Rest {
 	}
 
 	private static function serialize_product(int $post_id): array {
-		$variants = get_post_meta($post_id, 'sss_variants', true);
-		if (!is_array($variants)) {
-			$variants = [];
-		}
-		$options = get_post_meta($post_id, 'sss_options', true);
-		if (!is_array($options)) {
-			$options = [];
-		}
-
 		return [
 			'id' => $post_id,
 			'title' => get_the_title($post_id),
 			'permalink' => get_permalink($post_id),
-			'handle' => (string) get_post_meta($post_id, 'sss_handle', true),
-			'featuredImageUrl' => (string) get_post_meta($post_id, 'sss_featured_image_url', true),
-			'variants' => $variants,
-			'options' => $options,
+			'handle' => Products::get_handle($post_id),
+			'featuredImageUrl' => Products::get_featured_image_url($post_id),
+			'variants' => Products::get_variants($post_id),
+			'options' => Products::get_options($post_id),
 		];
 	}
 
@@ -135,7 +128,6 @@ final class Rest {
 		if ($cartId === null) {
 			return new WP_REST_Response(['cart' => null], 200);
 		}
-
 		return new WP_REST_Response(['cart' => self::shopify_cart_fetch($cartId)], 200);
 	}
 
@@ -207,8 +199,11 @@ final class Rest {
 		if (empty($_COOKIE[self::CART_COOKIE])) {
 			return null;
 		}
-		$id = (string) wp_unslash($_COOKIE[self::CART_COOKIE]);
-		return $id !== '' ? $id : null;
+		$id = trim((string) wp_unslash($_COOKIE[self::CART_COOKIE]));
+		if ($id === '') {
+			return null;
+		}
+		return $id;
 	}
 
 	private static function get_or_create_cart_id(): string {
@@ -216,6 +211,7 @@ final class Rest {
 		if ($existing !== null) {
 			return $existing;
 		}
+
 		$cart = self::shopify_cart_create();
 		$id = (string) $cart['id'];
 		self::set_cart_id($id);
@@ -227,7 +223,6 @@ final class Rest {
 		$httponly = true;
 		$samesite = 'Lax';
 
-		// PHP < 7.3 compatibility: fall back to a simple cookie string if needed.
 		if (PHP_VERSION_ID >= 70300) {
 			setcookie(self::CART_COOKIE, $id, [
 				'expires' => time() + 60 * 60 * 24 * 14,
@@ -263,11 +258,10 @@ mutation CartCreate($input: CartInput!) {
   }
 }
 GQL;
-		$vars = [
+		$data = $client->storefront_graphql($mutation, [
 			'input' => (object) [],
-		];
+		]);
 
-		$data = $client->storefront_graphql($mutation, $vars);
 		$payload = $data['data']['cartCreate'] ?? null;
 		if (!is_array($payload)) {
 			throw new \RuntimeException('Unexpected Storefront response (cartCreate missing).');
@@ -316,11 +310,9 @@ GQL;
 		$data = $client->storefront_graphql($query, ['id' => $cartId]);
 		$cart = $data['data']['cart'] ?? null;
 		if (!is_array($cart)) {
-			// Cart might have expired/been completed; clear cookie on next request.
 			return [];
 		}
 
-		// Normalize edges for frontend convenience.
 		$lines = [];
 		$edges = $cart['lines']['edges'] ?? [];
 		foreach ($edges as $edge) {

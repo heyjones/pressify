@@ -1,13 +1,13 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 final class Options {
-	public const GROUP = 'sss_options';
+	public const GROUP = 'pressify_options';
 
 	public static function get(): array {
 		$opts = get_option(self::GROUP, []);
@@ -29,10 +29,6 @@ final class Options {
 		// Optional for webhook verification (not required for the initial sync/cart).
 		$opts['webhook_secret'] = isset($raw['webhook_secret']) ? sanitize_text_field((string) $raw['webhook_secret']) : '';
 
-		/**
-		 * If options change we may need to reschedule cron.
-		 * We avoid direct scheduling here to keep sanitize pure; Sync handles it on load.
-		 */
 		return $opts;
 	}
 

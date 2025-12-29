@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Shopify Store Sync (Standalone)
+ * Plugin Name: Pressify
  * Description: Sync Shopify products/variants into WordPress and provide a Shopify-backed cart + checkout (no WooCommerce required).
  * Version: 0.1.0
  * Author: Your Company
@@ -13,14 +13,14 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('SSS_PLUGIN_VERSION', '0.1.0');
-define('SSS_PLUGIN_FILE', __FILE__);
-define('SSS_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('SSS_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('PRESSIFY_PLUGIN_VERSION', '0.1.0');
+define('PRESSIFY_PLUGIN_FILE', __FILE__);
+define('PRESSIFY_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('PRESSIFY_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-require_once SSS_PLUGIN_DIR . 'includes/class-sss-plugin.php';
+require_once PRESSIFY_PLUGIN_DIR . 'includes/class-pressify-plugin.php';
 
 add_action('plugins_loaded', static function () {
-	\SSS\Plugin::instance()->init();
+	\Pressify\Plugin::instance()->init();
 });
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace SSS;
+namespace Pressify;
 
 if (!defined('ABSPATH')) {
 	exit;
 }
 
 final class Sync {
-	private const CRON_HOOK = 'sss_sync_cron';
+	public const CRON_HOOK = 'pressify_sync_cron';
 
 	public static function activate(): void {
 		self::maybe_schedule();
@@ -43,9 +43,8 @@ final class Sync {
 		try {
 			self::run_sync();
 		} catch (\Throwable $e) {
-			// Avoid fatal errors during cron; log if WP_DEBUG_LOG enabled.
 			if (defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
-				error_log('[SSS] Scheduled sync failed: ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
+				error_log('[Pressify] Scheduled sync failed: ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
 			}
 		}
 	}
@@ -56,7 +55,6 @@ final class Sync {
 	}
 
 	public static function run_sync(): void {
-		// Ensure cron schedule matches current settings.
 		self::maybe_schedule();
 
 		$client = new ShopifyClient();
@@ -101,12 +99,11 @@ query Products($first: Int!, $after: String) {
 GQL;
 
 		do {
-			$vars = [
+			$data = $client->admin_graphql($query, [
 				'first' => 50,
 				'after' => $cursor,
-			];
+			]);
 
-			$data = $client->admin_graphql($query, $vars);
 			$products = $data['data']['products'] ?? null;
 			if (!is_array($products)) {
 				throw new \RuntimeException('Unexpected Shopify response shape (products missing).');
@@ -119,7 +116,6 @@ GQL;
 					continue;
 				}
 
-				// Normalize variant edges into flat array for storage/rendering.
 				$variantEdges = $node['variants']['edges'] ?? [];
 				$variants = [];
 				foreach ($variantEdges as $ve) {
@@ -149,8 +145,8 @@ GQL;
 			$cursor = $hasNext ? (string) ($pageInfo['endCursor'] ?? '') : null;
 		} while (!empty($hasNext) && !empty($cursor));
 
-		update_option('sss_last_sync_at', gmdate('c'));
-		update_option('sss_last_sync_count', (int) $total);
+		update_option('pressify_last_sync_at', gmdate('c'));
+		update_option('pressify_last_sync_count', (int) $total);
 	}
 }
 
