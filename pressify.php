@@ -4,14 +4,15 @@
  * Description: Sync Shopify products/variants into WordPress and provide a Shopify-backed cart + checkout (no WooCommerce required).
  * Version: 0.1.0
  * Author: Your Company
- * License: GPL-2.0-or-later
+ * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: pressify
+ * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
  */
 
-if (!defined('ABSPATH')) {
-	exit;
-}
+defined('ABSPATH') || exit;
 
 define('PRESSIFY_PLUGIN_VERSION', '0.1.0');
 define('PRESSIFY_PLUGIN_FILE', __FILE__);

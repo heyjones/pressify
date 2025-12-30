@@ -1,0 +1,30 @@
+## WordPress Plugin Handbook compliance (Pressify)
+
+When modifying this repository, **always follow the official WordPress Plugin Handbook**:
+
+- https://developer.wordpress.org/plugins/intro/
+
+### Plugin root + required files
+
+- **Plugin root**: Treat the repository root as the plugin directory that will be placed in `wp-content/plugins/pressify/`.
+- **Main plugin file must be in the plugin root**: `pressify.php` contains the plugin header comment block WordPress reads.
+- **Do not nest the plugin inside another folder** (e.g. avoid `pressify/pressify.php`). The plugin entry file must live at the plugin root.
+- **Keep paths relative to the plugin root**:
+  - PHP code in `includes/`
+  - Frontend assets in `assets/`
+  - Optional translations in `languages/`
+  - Uninstall logic in `uninstall.php`
+
+### Safety + WordPress conventions
+
+- **Block direct access** in all PHP files: `defined('ABSPATH') || exit;`
+- **Sanitize on input, escape on output** (e.g. `sanitize_text_field()`, `esc_html()`, `esc_attr()`, `wp_kses_post()`).
+- **Use nonces + capability checks** for admin actions and any state-changing endpoints.
+- **Prefer WordPress APIs** (Settings API, REST API, Cron, HTTP API) over custom implementations.
+- **Avoid global side effects at load time**: register hooks on `plugins_loaded`/`init` rather than executing logic immediately.
+
+### Structure decisions for Pressify
+
+- `pressify.php` defines core constants (version, plugin dir/url) using `plugin_dir_path(__FILE__)` and `plugin_dir_url(__FILE__)`.
+- All internal includes should use `PRESSIFY_PLUGIN_DIR . 'includes/...'` so paths remain correct regardless of install location.
+
