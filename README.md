@@ -30,6 +30,35 @@ Pressify is a **standalone WordPress plugin** (no WooCommerce dependency) that:
    - `wp-content/plugins/pressify/pressify.php`
 2. In WP Admin, go to **Plugins** → **Installed Plugins** and activate **Pressify**.
 
+## Installation via Composer
+
+Pressify can be installed as a Composer-managed WordPress plugin (e.g. in **Bedrock** or any setup using `composer/installers`).
+
+1. Ensure your WordPress project uses `composer/installers` (Bedrock does by default).
+2. If Pressify is not published on Packagist, add this repository as a VCS repository in your **WordPress project** `composer.json`:
+
+```json
+{
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "<THIS_REPO_GIT_URL>"
+    }
+  ]
+}
+```
+
+3. Require the package from your WordPress project:
+
+```bash
+composer require pressify/pressify
+```
+
+Notes:
+- If you don’t have tagged releases yet, you can install from the default branch with:
+  - `composer require pressify/pressify:dev-main`
+- In Bedrock, it should install to `web/app/plugins/pressify/`.
+
 ## Setup (WP Admin)
 
 1. Go to **Settings** → **Pressify**.

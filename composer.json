@@ -1,0 +1,13 @@
+{
+  "name": "pressify/pressify",
+  "description": "Sync Shopify products into WordPress and provide a Shopify-backed cart + checkout (no WooCommerce required).",
+  "type": "wordpress-plugin",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "php": ">=7.4",
+    "composer/installers": "^2.2"
+  },
+  "extra": {
+    "installer-name": "pressify"
+  }
+}
