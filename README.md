@@ -26,8 +26,8 @@ Pressify is a **standalone WordPress plugin** (no WooCommerce dependency) that:
 
 ## Installation
 
-1. Copy the plugin folder `pressify/` into your WordPress plugins directory:
-   - `wp-content/plugins/pressify/`
+1. Copy this plugin into your WordPress plugins directory so the main file ends up at:
+   - `wp-content/plugins/pressify/pressify.php`
 2. In WP Admin, go to **Plugins** → **Installed Plugins** and activate **Pressify**.
 
 ## Setup (WP Admin)
@@ -75,8 +75,8 @@ Pressify does not walk you through Shopify’s UI, but conceptually you need:
 
 These shortcodes automatically enqueue Pressify’s frontend assets:
 
-- `pressify/assets/pressify.js`
-- `pressify/assets/pressify.css`
+- `assets/pressify.js`
+- `assets/pressify.css`
 
 ### Typical page setup
 
@@ -129,7 +129,7 @@ Manual sync is always available from **Settings → Pressify**.
 
 Pressify uses a default Shopify API version constant:
 
-- `PRESSIFY_SHOPIFY_API_VERSION` (defined in `pressify/pressify.php`)
+- `PRESSIFY_SHOPIFY_API_VERSION` (defined in `pressify.php`)
 
 You normally **do not** need to set this during setup. If Shopify deprecates the version you’re using, you can override it:
 
@@ -149,7 +149,15 @@ add_filter('pressify_shopify_api_version', function ($version) {
 
 ## Project layout
 
-- `pressify/pressify.php`: plugin bootstrap
-- `pressify/includes/`: PHP code (settings page, sync, REST, shortcodes)
-- `pressify/assets/`: frontend JS/CSS
+- `pressify.php`: plugin bootstrap (WordPress plugin entry file)
+- `includes/`: PHP code (settings page, sync, REST, shortcodes)
+- `assets/`: frontend JS/CSS
+- `uninstall.php`: uninstall cleanup (options, cron, synced posts)
+- `.cursor/rules/wordpress-plugin-handbook.mdc`: rules for future agents (follow the WP Plugin Handbook)
+
+## Development note (for future contributors/agents)
+
+This repository is structured to match the **WordPress Plugin Handbook**. When making changes, follow:
+
+- https://developer.wordpress.org/plugins/intro/
 
